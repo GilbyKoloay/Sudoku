@@ -35,11 +35,12 @@ const styles = StyleSheet.create({
 
 export default function CreateGame({ navigation }: { navigation: any }) {
   const sizeLimit = 25;
-  const [size, setSize] = useState('');
-  const [sizableStatus, setSizableStatus] = useState(false);
-  const [sizeErrorMessage, setSizeErrorMessage] = useState('');
-  const [boxGroupConfiguration, setBoxConfiguration] = useState([[0, 0]]);
-  const [boxGroupConfigurationOption, setBoxConfigurationOption] = useState(0);
+
+  const [size, setSize] = useState <any> ('');
+  const [sizableStatus, setSizableStatus] = useState <boolean> (false);
+  const [sizeErrorMessage, setSizeErrorMessage] = useState <string> ('');
+  const [boxGroupConfiguration, setBoxConfiguration] = useState <Array<number[]>> ([[0, 0]]);
+  const [boxGroupConfigurationOption, setBoxConfigurationOption] = useState <number> (0);
 
   
 

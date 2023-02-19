@@ -1,12 +1,5 @@
-import React from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text
-} from 'react-native';
-
-
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 
 const styles = StyleSheet.create({
   screen: {
@@ -16,111 +9,96 @@ const styles = StyleSheet.create({
 
     borderWidth: 1,
   },
-  boxAll: {
-    flexDirection: 'row',
-    borderWidth: 0.5,
-    borderColor: '#202020'
-    
-    // ,borderWidth: 2
-    // ,borderColor: 'blue'
-  },
-  boxGroupWrapper: {
-    flex: 1
-
-    // ,borderWidth: 2
-    // ,borderColor: 'cyan'
-  },
-  boxGroup: {
-    borderWidth: 0.5,
-    borderColor: '#202020'
-
-    // ,borderWidth: 2
-    // ,borderColor: 'green'
-  },
-  boxWrapper: {
-    flexDirection: 'row'
-
-    // ,borderWidth: 2
-    // ,borderColor: 'yellow'
-  },
-  box: {
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    flex: 1,
-    borderWidth: 0.5,
-    borderColor: '#ACACAC',
-    aspectRatio: 1,
-
-    // ,borderWidth: 2
-    // ,borderColor: 'red'
-  },
   boxValue: {
     textAlign: 'center',
     textAlignVertical: 'center',
+    fontSize: 20,
     color: '#606060',
-    flex: 1,
-    fontSize: 20
 
-    // ,borderWidth: 1
-    // ,borderColor: 'red'
+    // borderWidth: 1,
+  },
+  box: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    aspectRatio: 1,
+    borderWidth: 0.5,
+    borderColor: '#ACACAC',
+
+    // borderWidth: 1,
+    // borderColor: 'red',
+  },
+  boxWrapper: {
+    flexDirection: 'row',
+
+    // borderWidth: 1,
+    // borderColor: 'yellow',
+  },
+  boxGroup: {
+    flex: 1,
+    borderWidth: 0.5,
+    borderColor: '#202020',
+
+    // borderWidth: 1,
+    // borderColor: 'green',
+  },
+  boxGroupWrapper: {
+    flexDirection: 'row',
+
+    // borderWidth: 1,
+    // borderColor: 'cyan',
+  },
+  boxAll: {
+    borderWidth: 0.5,
+    borderColor: '#202020',
+
+    // borderWidth: 1,
+    // borderColor: 'purple',
   }
 });
 
-
-
 export default function Game({ navigation, route }: { navigation: object, route: any }) {
   const { size, boxGroupConfiguration, boxGroupConfigurationOption } = route.params;
- 
+
+  const [boxValue, setBoxValue] = useState <Array<number>> ([]);
+  const [boxJSX, setBoxJSX] = useState <{
+    box: Array<JSX.Element>,
+    boxWrapper: Array<JSX.Element>,
+    boxGroup: Array<JSX.Element>,
+    boxGroupWrapper: Array<JSX.Element>,
+    boxAll: JSX.Element,
+  }> ({
+    box: [],
+    boxWrapper: [],
+    boxGroup: [],
+    boxGroupWrapper: [],
+    boxAll: <></>,
+  });
+
+
+  
   const createBox = (size: number) => {
-    const boxValue: Array<number> =  fillBoxWithValue(size * size);
-
-    let box: Array<JSX.Element>;
-    let boxWrapper: Array<JSX.Element> = [];
-    let boxGroup: Array<JSX.Element> = [];
-    let boxGroupWrapper: Array<JSX.Element> = [];
-    let boxAll: JSX.Element | undefined;
-
-    // fill box
-    box = boxValue.map((value, index) => (
+    const box: Array<JSX.Element> = boxValue.map((value, index) => (
       <View key={index} style={styles.box}>
         <Text style={styles.boxValue}>{value}</Text>
       </View>
     ));
-    
-    // fill boxWrapper
-    boxWrapper = fillBoxWithJSXElement(box, boxGroupConfiguration[boxGroupConfigurationOption][1], boxGroupConfiguration[boxGroupConfigurationOption][1], styles.boxWrapper);
+    const boxWrapper: Array<JSX.Element> = fillBoxWithJSXElement(box, boxGroupConfiguration[boxGroupConfigurationOption][1], boxGroupConfiguration[boxGroupConfigurationOption][1], styles.boxWrapper);
+    const boxGroup: Array<JSX.Element> = fillBoxWithJSXElement(boxWrapper, boxGroupConfiguration[boxGroupConfigurationOption][0], boxGroupConfiguration[boxGroupConfigurationOption][0], styles.boxGroup);
+    const boxGroupWrapper: Array<JSX.Element> = fillBoxWithJSXElement(boxGroup, size/boxGroupConfiguration[boxGroupConfigurationOption][1], boxGroupConfiguration[boxGroupConfigurationOption][0], styles.boxGroupWrapper);
+    const boxAll = <View style={styles.boxAll}>{boxGroupWrapper}</View>;
 
-    // fill boxGroup
-    boxGroup = fillBoxWithJSXElement(boxWrapper, boxGroupConfiguration[boxGroupConfigurationOption][0], boxGroupConfiguration[boxGroupConfigurationOption][1], styles.boxGroup);
+    return boxAll;
+  }
+  
+  const fillBoxWithValue = (size: number) => {
+    let box: Array<number> = [];
 
-    // fill boxGroupWrapper
-    boxGroupWrapper = fillBoxWithJSXElement(boxGroup, size/boxGroupConfiguration[boxGroupConfigurationOption][0], boxGroupConfiguration[boxGroupConfigurationOption][1], styles.boxGroupWrapper);
-    
-    // fill boxAll
-    boxAll = <View style={styles.boxAll}>
-      {boxGroupWrapper.map(value => value)}
-    </View>
-
-    return(
-      <ScrollView style={{display: 'flex', flex: 1}}>
-        <Text>Allowed to play. {`Number is ${size}`}</Text>
-        <Text>Configurations: </Text>
-        {boxGroupConfiguration.map((val: number, index: number) => <Text key={index}>{val}</Text>)}
-
-        <Text>Choose: Row ({boxGroupConfiguration[boxGroupConfigurationOption][0]}) | Column ({boxGroupConfiguration[boxGroupConfigurationOption][1]})</Text>
-        {boxAll}
-      </ScrollView>
-    );
-  };
-
-  const fillBoxWithValue = (boxTotal: number) => {
-    let boxValue: Array<number> = [];
-
-    for(let count=1; count<=boxTotal; count++) {
-      boxValue.push(count);
+    for(let count=1; count<=size*size; count++) {
+      box.push(count);
     }
     
-    return boxValue;
+    return box;
   };
 
   const fillBoxWithJSXElement = (
@@ -147,6 +125,10 @@ export default function Game({ navigation, route }: { navigation: object, route:
 
     return box;
   };
+
+  useEffect(() => {
+    setBoxValue(fillBoxWithValue(size));
+  }, []);
 
 
 
