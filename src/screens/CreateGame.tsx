@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Button } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Button
+} from 'react-native';
+import _globalStyles from './_globalStyles';
 
 const styles = StyleSheet.create({
   screen: {
@@ -39,7 +47,7 @@ export default function CreateGame({ navigation }: { navigation: any }) {
   const [size, setSize] = useState <any> ('');
   const [sizableStatus, setSizableStatus] = useState <boolean> (false);
   const [sizeErrorMessage, setSizeErrorMessage] = useState <string> ('');
-  const [boxGroupConfiguration, setBoxConfiguration] = useState <Array<number[]>> ([[0, 0]]);
+  const [boxGroupConfiguration, setBoxConfiguration] = useState <Array<{row: number, column: number}>> ([]);
   const [boxGroupConfigurationOption, setBoxConfigurationOption] = useState <number> (0);
 
   
@@ -47,7 +55,7 @@ export default function CreateGame({ navigation }: { navigation: any }) {
   const sizableStatusCheck = (size: string) => {
     setSize(size);
     setSizableStatus(false);
-    setBoxConfiguration([[0, 0]]);
+    setBoxConfiguration([]);
     setBoxConfigurationOption(0);
     
     // check if number is more than 5 and less than size limit
@@ -58,10 +66,13 @@ export default function CreateGame({ navigation }: { navigation: any }) {
         if(parseInt(size) % count === 0) {
   
           // if number is not prime, count the total of box configuration
-          let boxConfigurationTemp: Array<number>[] = [];
+          let boxConfigurationTemp: Array<{row: number, column: number}> = [];
           for(let countOne=2; countOne<parseInt(size)/2; countOne++) {
             for(let countTwo=countOne; countTwo<=parseInt(size)/2; countTwo++) {
-              (countOne * countTwo === parseInt(size)) && boxConfigurationTemp.push([countOne, countTwo]);
+              (countOne * countTwo === parseInt(size)) && boxConfigurationTemp.push({
+                row: countOne,
+                column: countTwo,
+              });
             }
           }
           setBoxConfiguration(boxConfigurationTemp);
@@ -73,18 +84,18 @@ export default function CreateGame({ navigation }: { navigation: any }) {
     } else if(parseInt(size) >= sizeLimit) {
       setSizeErrorMessage("lmao don't crash the game mate.");
     } else {
-      setSizeErrorMessage('* Sudoku size must be a prime number and more than 5.');
+      setSizeErrorMessage('* Sudoku size must not be a prime number and more than 5.');
     }
   };
   
 
 
   return(
-    <View style={styles.screen}>
+    <View style={_globalStyles.screen}>
       <Text style={styles.text}>Input Sudoku size: </Text>
       <TextInput 
         style={StyleSheet.compose(styles.text, styles.textInput)} 
-        placeholder='must be a prime number & more than 5' 
+        placeholder='must not be a prime number & more than 5' 
         keyboardType='number-pad' 
         value={size.toString()} 
         onChangeText={value => sizableStatusCheck(value)}
@@ -95,7 +106,7 @@ export default function CreateGame({ navigation }: { navigation: any }) {
         <View style={styles.boxConfigurationOptionWrapper}>
           {boxGroupConfiguration.map((value, index) => (
             <TouchableOpacity key={index} style={(index === boxGroupConfigurationOption) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setBoxConfigurationOption(index)}>
-              <Text style={styles.text}>{value[0]} x {value[1]}</Text>
+              <Text style={styles.text}>{value.row} x {value.column}</Text>
             </TouchableOpacity>
           ))}
         </View>
