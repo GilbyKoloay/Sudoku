@@ -43,16 +43,22 @@ const styles = StyleSheet.create({
 
 export default function CreateGame({ navigation }: { navigation: any }) {
   const sizeLimit = 25;
+  const difficultyNumber = {
+    easy: 0.5,
+    medium: 0.75,
+    hard: 0.8
+  }
 
-  const [size, setSize] = useState <any> ('');
+  const [size, setSize] = useState <string> ('');
   const [sizableStatus, setSizableStatus] = useState <boolean> (false);
   const [sizeErrorMessage, setSizeErrorMessage] = useState <string> ('');
   const [boxGroupConfiguration, setBoxConfiguration] = useState <Array<{row: number, column: number}>> ([]);
   const [boxGroupConfigurationOption, setBoxConfigurationOption] = useState <number> (0);
+  const [difficulty, setDifficulty] = useState <number> (difficultyNumber.easy);
 
   
 
-  const sizableStatusCheck = (size: string) => {
+  function sizableStatusCheck(size: string) {
     setSize(size);
     setSizableStatus(false);
     setBoxConfiguration([]);
@@ -60,27 +66,25 @@ export default function CreateGame({ navigation }: { navigation: any }) {
     
     // check if number is more than 5 and less than size limit
     if(parseInt(size) > 5 && parseInt(size) <= sizeLimit) {
-
+      
       // prime number check
       for(let count=2; count<parseInt(size); count++) {
         if(parseInt(size) % count === 0) {
-  
+          
           // if number is not prime, count the total of box configuration
           let boxConfigurationTemp: Array<{row: number, column: number}> = [];
           for(let countOne=2; countOne<parseInt(size)/2; countOne++) {
             for(let countTwo=countOne; countTwo<=parseInt(size)/2; countTwo++) {
               (countOne * countTwo === parseInt(size)) && boxConfigurationTemp.push({
                 row: countOne,
-                column: countTwo,
+                column: countTwo
               });
             }
           }
           setBoxConfiguration(boxConfigurationTemp);
           setSizableStatus(true);
-  
         }
       }
-
     } else if(parseInt(size) >= sizeLimit) {
       setSizeErrorMessage("lmao don't crash the game mate.");
     } else {
@@ -112,7 +116,34 @@ export default function CreateGame({ navigation }: { navigation: any }) {
         </View>
       )}
 
-      {sizableStatus && <Button title='Button' onPress={() => navigation.navigate('Game', {size, boxGroupConfiguration, boxGroupConfigurationOption})} />}
+      {sizableStatus && (
+        <View>
+          <Text style={styles.text}>Choose difficulty:</Text>
+          <View style={styles.boxConfigurationOptionWrapper}>
+            <TouchableOpacity style={(difficultyNumber.easy === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.easy)}>
+              <Text style={styles.text}>Easy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={(difficultyNumber.medium === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.medium)}>
+              <Text style={styles.text}>Medium</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={(difficultyNumber.hard === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.hard)}>
+              <Text style={styles.text}>Hard</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {sizableStatus && (
+        <Button
+          title='Create Game'
+          onPress={() => navigation.navigate('Game', {
+            size: parseInt(size),
+            boxGroupConfiguration,
+            boxGroupConfigurationOption,
+            difficulty
+          })}
+        />
+      )}
     </View>
   );
 };
