@@ -1,140 +1,298 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity
+} from 'react-native';
+import stylesGlobal from './_globalStyles';
 
 const styles = StyleSheet.create({
-  screen: {
-    display: 'flex',
-    flex: 1,
-    padding: 5,
-
-    borderWidth: 1,
-  },
-  boxValue: {
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    fontSize: 20,
-    color: '#606060',
-
-    // borderWidth: 1,
+  boxRow: {
+    flexDirection: 'row'
   },
   box: {
-    justifyContent: 'center',
-    alignItems: 'center',
     flex: 1,
-    aspectRatio: 1,
-    borderWidth: 0.5,
-    borderColor: '#ACACAC',
+    aspectRatio: 1
 
-    // borderWidth: 1,
-    // borderColor: 'red',
+    ,borderWidth: 1
   },
-  boxWrapper: {
+  boxText: {
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    flex: 1
+  },
+  boxNoteRow: {
     flexDirection: 'row',
-
-    // borderWidth: 1,
-    // borderColor: 'yellow',
-  },
-  boxGroup: {
-    flex: 1,
-    borderWidth: 0.5,
-    borderColor: '#202020',
-
-    // borderWidth: 1,
-    // borderColor: 'green',
-  },
-  boxGroupWrapper: {
-    flexDirection: 'row',
-
-    // borderWidth: 1,
-    // borderColor: 'cyan',
-  },
-  boxAll: {
-    borderWidth: 0.5,
-    borderColor: '#202020',
-
-    // borderWidth: 1,
-    // borderColor: 'purple',
+    flex: 1
   }
 });
 
-export default function Game({ navigation, route }: { navigation: object, route: any }) {
-  const { size, boxGroupConfiguration, boxGroupConfigurationOption } = route.params;
-
-  const [boxValue, setBoxValue] = useState <Array<number>> ([]);
-  const [boxJSX, setBoxJSX] = useState <{
-    box: Array<JSX.Element>,
-    boxWrapper: Array<JSX.Element>,
-    boxGroup: Array<JSX.Element>,
-    boxGroupWrapper: Array<JSX.Element>,
-    boxAll: JSX.Element,
-  }> ({
-    box: [],
-    boxWrapper: [],
-    boxGroup: [],
-    boxGroupWrapper: [],
-    boxAll: <></>,
-  });
 
 
-  
-  const createBox = (size: number) => {
-    const box: Array<JSX.Element> = boxValue.map((value, index) => (
-      <View key={index} style={styles.box}>
-        <Text style={styles.boxValue}>{value}</Text>
+export default function({ route }: { navigation: object, route: any }) {
+  const { size, boxGroupConfiguration, boxGroupConfigurationOption, difficulty } : {
+    size: number,
+    boxGroupConfiguration: Array<{
+      row: number,
+      column: number
+    }>,
+    boxGroupConfigurationOption: number,
+    difficulty: number
+  } = route.params;
+
+  const [box, setBox] = useState <Array<Array<{
+    value: number,
+    userValue: number,
+    note: Array<number>,
+    JSX: JSX.Element
+  }>>> ([]);
+
+
+
+  const renderBox = () => {
+    if(box.length === 0) {
+      return <Text>Loading ...</Text>
+    }
+
+    return box.map((row, rowIndex) => (
+      <View key={rowIndex} style={styles.boxRow}>
+        {row.map(box => box.JSX)}
       </View>
     ));
-    const boxWrapper: Array<JSX.Element> = fillBoxWithJSXElement(box, boxGroupConfiguration[boxGroupConfigurationOption][1], boxGroupConfiguration[boxGroupConfigurationOption][1], styles.boxWrapper);
-    const boxGroup: Array<JSX.Element> = fillBoxWithJSXElement(boxWrapper, boxGroupConfiguration[boxGroupConfigurationOption][0], boxGroupConfiguration[boxGroupConfigurationOption][0], styles.boxGroup);
-    const boxGroupWrapper: Array<JSX.Element> = fillBoxWithJSXElement(boxGroup, size/boxGroupConfiguration[boxGroupConfigurationOption][1], boxGroupConfiguration[boxGroupConfigurationOption][0], styles.boxGroupWrapper);
-    const boxAll = <View style={styles.boxAll}>{boxGroupWrapper}</View>;
+  };
 
-    return boxAll;
+
+
+  function createBox() {
+    let thisBox: Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>[] = initializeBoxObjectValue();
+
+    thisBox = setBoxValue(thisBox);
+    thisBox = setBoxUserValue(thisBox);
+    thisBox = setBoxJSX(thisBox);
+
+    setBox(thisBox);
   }
-  
-  const fillBoxWithValue = (size: number) => {
-    let box: Array<number> = [];
 
-    for(let count=1; count<=size*size; count++) {
-      box.push(count);
+  function initializeBoxObjectValue() {
+    let box: Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>[] = [];
+
+    let noteDefaultValue: Array<number> = [];
+    for(let noteCount=0; noteCount<size; noteCount++) {
+      noteDefaultValue.push(0);
+      box.push([]);
+    }
+
+    for(let row=0; row<size; row++) {
+      for(let col=0; col<size; col++) {
+        box[row].push({
+          value: 0,
+          userValue: 0,
+          note: noteDefaultValue,
+          JSX: <></>
+        });
+      }
+    }
+
+    return box;
+  }
+
+  function setBoxValue(
+    box: Array<Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>>
+  ) {
+    for(let row=0; row<size; row++) {
+      for(let col=0, generatedValueCount=0; col<size; ) {
+        const generatedValue = Math.floor((Math.random()*size) + 1);
+        // console.log('\n');
+        if(isBoxValueFittable(box, row, col, generatedValue)) {
+          // console.log(`SUCCEED inputted ${generatedValue} on [${row}][${col}]`);
+          box[row][col].value = generatedValue;
+          generatedValueCount = 0;
+          col++;
+        } else {
+          // console.log(`FAILED inputted ${generatedValue} on [${row}][${col}]`);
+          generatedValueCount++;
+        }
+
+        // console.log(`row (${row}) | col (${col}) | generatedValueCount (${generatedValueCount}) | max = (${Math.round((size*size)/2)}) | ${generatedValueCount === Math.round((size*size)/2)}`);
+        if(generatedValueCount === Math.round((size*size)/2)) {
+          // console.log('RESETTED');
+          row = -1;
+          box = initializeBoxObjectValue();
+          break;
+
+          // if(col === 0) {
+          //   row-=2;
+          //   col=size-1;
+          // } else {
+          //   col--;
+          // }
+          // box[row][col].value = 0;
+        }
+      }
+    }
+
+    return box;
+  }
+
+  function isBoxValueFittable(
+    box: Array<Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>>,
+    rowTarget: number,
+    colTarget: number,
+    generatedValue: number
+  ) {
+    let fittable: boolean = true;
+    // console.log(`testing (${generatedValue}) on box[${rowTarget}][${colTarget}]`);
+
+    // row check
+    for(let col=0; col<size; col++) {
+      if(generatedValue === box[rowTarget][col].value) {
+        fittable = false;
+      }
+    }
+
+    // col check
+    for(let row=0; row<size; row++) {
+      if(generatedValue === box[row][colTarget].value) {
+        fittable = false;
+      }
+    }
+
+    // find the min/max for group check
+    let rowMax: number = 0;
+    let rowMin: number = 0;
+    let colMax: number = 0;
+    let colMin: number = 0;
+    for(let row=rowTarget; row<size; row++) {
+      for(let col=colTarget; col<size; col++) {
+        if((col+1) % boxGroupConfiguration[boxGroupConfigurationOption].column === 0 && colMax === 0) {
+          colMax = col+1;
+          break;
+        }
+      }
+      if((row+1) % boxGroupConfiguration[boxGroupConfigurationOption].row === 0 && rowMax === 0) {
+        rowMax = row+1;
+        break;
+      }
+    }
+    for(let row=rowTarget; row>=0; row--) {
+      for(let col=colTarget; col>=0; col--) {
+        if(col % boxGroupConfiguration[boxGroupConfigurationOption].column === 0 && colMin === 0) {
+          colMin = col;
+          break;
+        }
+      }
+      if(row % boxGroupConfiguration[boxGroupConfigurationOption].row === 0 && rowMin === 0) {
+        rowMin = row;
+        break;
+      }
     }
     
-    return box;
-  };
-
-  const fillBoxWithJSXElement = (
-    from: Array<JSX.Element>,
-    boxGroupConfiguration: number,
-    key: number,
-    style: object,
-  ) => {
-    const box: Array<JSX.Element> = [];
-
-    from.forEach((value1, index1) => {
-      if(index1 % boxGroupConfiguration === 0) {
-        box.push(
-          <View key={index1/key} style={style}>
-            {from.map((value2, index2) => {
-              if(index2>=index1 && index2<index1+boxGroupConfiguration) {
-                return value2;
-              }
-            })}
-          </View>
-        );
+    // group check
+    for(let row=rowMin; row<rowMax; row++) {
+      for(let col=colMin; col<colMax; col++) {
+        if(generatedValue === box[row][col].value) {
+          fittable = false;
+        }
       }
-    });
+    }
+
+    return fittable;
+  }
+
+  function setBoxUserValue(
+    box: Array<Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>>
+  ) {
+    for(let count=0; count<Math.round((size*size)-(size*size)*difficulty); ) {
+      const row = Math.floor((Math.random() * (size-1)) + 1);
+      const col = Math.floor((Math.random() * (size-1)) + 1);
+
+      if(box[row][col].userValue === 0) {
+        box[row][col].userValue = box[row][col].value;
+        count++;
+      }
+    }
 
     return box;
-  };
+  }
+
+  function setBoxJSX(
+    box: Array<Array<{
+      value: number,
+      userValue: number,
+      note: Array<number>,
+      JSX: JSX.Element
+    }>>
+  ) {
+    for(let count=0, row=0; row<size; row++) {
+      for(let col=0; col<size; col++) {
+        if(box[row][col].userValue === 0) {
+          box[row][col].JSX = (
+            <TouchableOpacity key={count} style={styles.box}>
+              {box[row][col].note.map((row, noteRowIndex) => {
+                if(noteRowIndex % boxGroupConfiguration[boxGroupConfigurationOption].column === 0) {
+                  return(
+                    <View key={noteRowIndex/boxGroupConfiguration[boxGroupConfigurationOption].column} style={styles.boxNoteRow}>
+                      {box[row][col].note.map((noteValue, noteIndex) => {
+                        if(noteIndex >= noteRowIndex && noteIndex < noteRowIndex+boxGroupConfiguration[boxGroupConfigurationOption].column) {
+                          return <Text key={noteIndex} style={styles.boxText}>{(noteValue === 0) ? '' : noteValue}</Text>;
+                        }
+                      })}
+                    </View>
+                  );
+                }
+              })}
+            </TouchableOpacity>
+          );
+        } else {
+          box[row][col].JSX = (
+            <TouchableOpacity key={count} style={styles.box}>
+              <Text style={styles.boxText}>{box[row][col].userValue}</Text>
+            </TouchableOpacity>
+          );
+        }
+
+        count++;
+      }
+    }
+
+    return box;
+  }
 
   useEffect(() => {
-    setBoxValue(fillBoxWithValue(size));
+    createBox();
   }, []);
 
 
 
   return(
-    <View style={styles.screen}>
-      {createBox(size)}
+    <View style={stylesGlobal.screen}>
+      {renderBox()}
     </View>
   );
 }
