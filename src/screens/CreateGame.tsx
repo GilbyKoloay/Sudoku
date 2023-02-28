@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,143 +7,225 @@ import {
   TouchableOpacity,
   Button
 } from 'react-native';
-import _globalStyles from './_globalStyles';
+import globalStyles from './_globalStyles';
+
+
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    padding: 10
-  },
-  text: {
-    color: '#202020',
-    fontSize: 20
-  },
-  textInput: {
-    borderWidth: 1,
-    fontSize: 15,
+  section: {
     padding: 5
   },
-  textError: {
-    color: 'red',
-    fontSize: 15
+  textBig: {
+    fontSize: 17.5,
+    color: '#404040'
   },
-  boxConfigurationOptionWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
+  textSmall: {
+    fontSize: 15,
+    color: '#404040'
   },
-  boxGroupConfigurationOption: {
+  textErrorSmall: {
+    fontSize: 15,
+    color: '#FF4040'
+  },
+  textInput: {
+    padding: 5,
     borderWidth: 1,
-    flex: 1,
-    alignItems: 'center'
+    fontSize: 15,
+    color: '#404040'
   },
-  boxConfigurationOptionSelected: {
-    backgroundColor: 'green'
+  option: {
+    flex: 1,
+    borderWidth: 1,
+    padding: 5,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
 
-export default function CreateGame({ navigation }: { navigation: any }) {
-  const sizeLimit = 25;
-  const difficultyNumber = {
-    easy: 0.5,
-    medium: 0.75,
-    hard: 0.8
+interface interfaces {
+  sudokuBoxGroupSizeList: Array<{row: number, col: number}>
+};
+
+const sudokuSizeLimit: number = 25;
+const difficulty: {
+  easy: number,
+  medium: number,
+  hard: number
+} = {
+  easy: 0.25,
+  medium: 0.5,
+  hard: 0.75
+};
+
+
+
+function checkIfNumberIsPrime(value: number): boolean {
+  for(let number=2; number<value; number++) {
+    if(value % number === 0) return false;
   }
 
-  const [size, setSize] = useState <string> ('');
-  const [sizableStatus, setSizableStatus] = useState <boolean> (false);
-  const [sizeErrorMessage, setSizeErrorMessage] = useState <string> ('');
-  const [boxGroupConfiguration, setBoxConfiguration] = useState <Array<{row: number, column: number}>> ([]);
-  const [boxGroupConfigurationOption, setBoxConfigurationOption] = useState <number> (0);
-  const [difficulty, setDifficulty] = useState <number> (difficultyNumber.easy);
+  return true;
+}
 
-  
+function countTotalOfSudokuBoxGroupSize(size: number): interfaces["sudokuBoxGroupSizeList"] {
+  const sudokuBoxGroupSizeList: interfaces["sudokuBoxGroupSizeList"] = [];
 
-  function sizableStatusCheck(size: string) {
-    setSize(size);
-    setSizableStatus(false);
-    setBoxConfiguration([]);
-    setBoxConfigurationOption(0);
-    
-    // check if number is more than 5 and less than size limit
-    if(parseInt(size) > 5 && parseInt(size) <= sizeLimit) {
-      
-      // prime number check
-      for(let count=2; count<parseInt(size); count++) {
-        if(parseInt(size) % count === 0) {
-          
-          // if number is not prime, count the total of box configuration
-          let boxConfigurationTemp: Array<{row: number, column: number}> = [];
-          for(let countOne=2; countOne<parseInt(size)/2; countOne++) {
-            for(let countTwo=countOne; countTwo<=parseInt(size)/2; countTwo++) {
-              (countOne * countTwo === parseInt(size)) && boxConfigurationTemp.push({
-                row: countOne,
-                column: countTwo
-              });
-            }
-          }
-          setBoxConfiguration(boxConfigurationTemp);
-          setSizableStatus(true);
-        }
-      }
-    } else if(parseInt(size) >= sizeLimit) {
-      setSizeErrorMessage("lmao don't crash the game mate.");
-    } else {
-      setSizeErrorMessage('* Sudoku size must not be a prime number and more than 5.');
+  for(let rowCount=2; rowCount<size/2; rowCount++) {
+    for(let colCount=rowCount; colCount<=size/2; colCount++) {
+      (rowCount * colCount === size) && sudokuBoxGroupSizeList.push({row: rowCount, col: colCount});
     }
-  };
-  
+  }
+
+  return sudokuBoxGroupSizeList;
+}
 
 
-  return(
-    <View style={_globalStyles.screen}>
-      <Text style={styles.text}>Input Sudoku size: </Text>
-      <TextInput 
-        style={StyleSheet.compose(styles.text, styles.textInput)} 
-        placeholder='must not be a prime number & more than 5' 
-        keyboardType='number-pad' 
-        value={size.toString()} 
-        onChangeText={value => sizableStatusCheck(value)}
+
+const InputSudokuSize = ({ props }: { props: {
+  sudokuSize: string,
+  checkIfSudokuSizeIsPlayable: Function,
+  sudokuSizeNotPlayableErrorMessage: string
+}}): JSX.Element => {
+  const { sudokuSize, checkIfSudokuSizeIsPlayable, sudokuSizeNotPlayableErrorMessage } = props;
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.textBig}>Input Sudoku Size: </Text>
+      <TextInput
+        style={styles.textInput}
+        keyboardType='number-pad'
+        value={sudokuSize}
+        onChangeText={value => checkIfSudokuSizeIsPlayable(value)}
       />
-      {(size !== '' && sizableStatus === false) && <Text style={styles.textError}>{sizeErrorMessage}</Text>}
+      {((sudokuSizeNotPlayableErrorMessage).length > 0) && <Text style={styles.textErrorSmall}>{sudokuSizeNotPlayableErrorMessage}</Text>}
+    </View>
+  );
+};
 
-      {sizableStatus && (
-        <View style={styles.boxConfigurationOptionWrapper}>
-          {boxGroupConfiguration.map((value, index) => (
-            <TouchableOpacity key={index} style={(index === boxGroupConfigurationOption) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setBoxConfigurationOption(index)}>
-              <Text style={styles.text}>{value.row} x {value.column}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+const SelectSudokuBoxGroupSize = ({ props }: { props: {
+  sudokuBoxGroupSizeList: interfaces["sudokuBoxGroupSizeList"],
+  selectedBoxGroupSize: number,
+  setSelectedBoxGroupSize: Function
+}}): JSX.Element => {
+  const { sudokuBoxGroupSizeList, selectedBoxGroupSize, setSelectedBoxGroupSize } = props;
 
-      {sizableStatus && (
-        <View>
-          <Text style={styles.text}>Choose difficulty:</Text>
-          <View style={styles.boxConfigurationOptionWrapper}>
-            <TouchableOpacity style={(difficultyNumber.easy === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.easy)}>
-              <Text style={styles.text}>Easy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={(difficultyNumber.medium === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.medium)}>
-              <Text style={styles.text}>Medium</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={(difficultyNumber.hard === difficulty) ? StyleSheet.compose(styles.boxGroupConfigurationOption, styles.boxConfigurationOptionSelected) : styles.boxGroupConfigurationOption} onPress={() => setDifficulty(difficultyNumber.hard)}>
-              <Text style={styles.text}>Hard</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+  return (
+    <View style={styles.section}>
+      <Text style={styles.textBig}>Select Sudoku Box Group Size: </Text>
+      <View style={{flexDirection: 'row'}}>
+        {sudokuBoxGroupSizeList.map((value, index) => (
+          <TouchableOpacity
+            key={index}
+            style={(selectedBoxGroupSize === index) ? StyleSheet.compose(styles.option, {backgroundColor: '#00CC00'}) : styles.option}
+            delayPressIn={0}
+            onPressIn={() => setSelectedBoxGroupSize(index)}
+            activeOpacity={0.5}
+          >
+            <Text style={styles.textSmall}>{value.row} x {value.col}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+};
 
-      {sizableStatus && (
+const SelectDifficulty = ({ props }: { props: {
+  selectedDifficulty: number,
+  setSelectedDifficulty: Function,
+}}): JSX.Element => {
+  const { selectedDifficulty, setSelectedDifficulty } = props;
+  
+  return (
+    <View style={styles.section}>
+      <Text style={styles.textBig}>Select Difficulty: </Text>
+      <View style={{flexDirection: 'row'}}>
+        <TouchableOpacity
+          style={(selectedDifficulty === difficulty.easy) ? StyleSheet.compose(styles.option, {backgroundColor: '#00CC00'}) : styles.option}
+          delayPressIn={0}
+          onPressIn={() => setSelectedDifficulty(difficulty.easy)}
+          activeOpacity={0.5}
+        >
+          <Text style={styles.textSmall}>Easy</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={(selectedDifficulty === difficulty.medium) ? StyleSheet.compose(styles.option, {backgroundColor: '#00CC00'}) : styles.option}
+          delayPressIn={0}
+          onPressIn={() => setSelectedDifficulty(difficulty.medium)}
+          activeOpacity={0.5}
+        >
+          <Text style={styles.textSmall}>Medium</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={(selectedDifficulty === difficulty.hard) ? StyleSheet.compose(styles.option, {backgroundColor: '#00CC00'}) : styles.option}
+          delayPressIn={0}
+          onPressIn={() => setSelectedDifficulty(difficulty.hard)}
+          activeOpacity={0.5}
+        >
+          <Text style={styles.textSmall}>Hard</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+
+
+export default function({ navigation }: { navigation: any }) {
+  const [sudokuSize, setSudokuSize] = useState <string> ('');
+  const [isSudokuSizePlayable, setIsSudokuSizePlayable] = useState <boolean> (false);
+  const [sudokuSizeNotPlayableErrorMessage, setSudokuSizeNotPlayableErrorMessage] = useState <string> ('');
+  const [sudokuBoxGroupSizeList, setSudokuBoxGroupSizeList] = useState <interfaces["sudokuBoxGroupSizeList"]> ([]);
+  const [selectedBoxGroupSize, setSelectedBoxGroupSize] = useState <number> (0);
+  const [selectedDifficulty, setSelectedDifficulty] = useState <number> (difficulty.easy);
+
+
+
+  const checkIfSudokuSizeIsPlayable = useCallback((inputtedSudokuSize: any) => {console.log('not using useCallback (checkIfSudokuSizeIsPlayable)');
+    setSudokuSize(inputtedSudokuSize);
+    setIsSudokuSizePlayable(false);
+    setSudokuBoxGroupSizeList([]);
+    setSelectedBoxGroupSize(0);
+    setSelectedDifficulty(difficulty.easy);
+
+    inputtedSudokuSize = parseInt(inputtedSudokuSize); // change the inputted size to number type to calculate it easily
+
+    if(isNaN(inputtedSudokuSize)) {
+      setSudokuSizeNotPlayableErrorMessage('');
+    }
+    else if(inputtedSudokuSize <= 5) {
+      setSudokuSizeNotPlayableErrorMessage('* Size must be more than 5.');
+    }
+    else if(inputtedSudokuSize > sudokuSizeLimit) {
+      setSudokuSizeNotPlayableErrorMessage("* lmao don't crash the game mate.");
+    }
+    else if(checkIfNumberIsPrime(inputtedSudokuSize)) {
+      setSudokuSizeNotPlayableErrorMessage('* Size is a prime number.');
+    }
+    else {
+      setIsSudokuSizePlayable(true);
+      setSudokuSizeNotPlayableErrorMessage('');
+      setSudokuBoxGroupSizeList(countTotalOfSudokuBoxGroupSize(inputtedSudokuSize));
+    }
+  }, [sudokuSize]);
+
+
+
+  return (
+    <View style={globalStyles.screen}>
+      <InputSudokuSize props={{sudokuSize, checkIfSudokuSizeIsPlayable, sudokuSizeNotPlayableErrorMessage}} />
+      {isSudokuSizePlayable && <SelectSudokuBoxGroupSize props={{sudokuBoxGroupSizeList, selectedBoxGroupSize, setSelectedBoxGroupSize}} />}
+      {isSudokuSizePlayable && <SelectDifficulty props={{selectedDifficulty, setSelectedDifficulty}} />}
+      {isSudokuSizePlayable && (
         <Button
-          title='Create Game'
+          title="Create Game"
           onPress={() => navigation.navigate('Game', {
-            size: parseInt(size),
-            boxGroupConfiguration,
-            boxGroupConfigurationOption,
+            size: parseInt(sudokuSize),
+            boxGroupSize: sudokuBoxGroupSizeList[selectedBoxGroupSize],
             difficulty
           })}
+          color='#00EC00'
         />
       )}
     </View>
   );
-};
+}

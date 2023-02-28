@@ -30,8 +30,30 @@ const styles = StyleSheet.create({
 
 
 
+const renderBox = (box: Array<Array<{
+    value: number,
+    userValue: number,
+    note: Array<number>,
+    JSX: JSX.Element
+  }>>) => {
+  if(box.length === 0) {
+    return <Text>Loading ...</Text>
+  }
+
+  return box.map((row, rowIndex) => (
+    <View key={rowIndex} style={styles.boxRow}>
+      {row.map(box => box.JSX)}
+    </View>
+  ));
+  };
+
 export default function({ route }: { navigation: object, route: any }) {
-  const { size, boxGroupConfiguration, boxGroupConfigurationOption, difficulty } : {
+  const {
+    size,
+    boxGroupConfiguration,
+    boxGroupConfigurationOption,
+    difficulty
+  } : {
     size: number,
     boxGroupConfiguration: Array<{
       row: number,
@@ -47,20 +69,6 @@ export default function({ route }: { navigation: object, route: any }) {
     note: Array<number>,
     JSX: JSX.Element
   }>>> ([]);
-
-
-
-  const renderBox = () => {
-    if(box.length === 0) {
-      return <Text>Loading ...</Text>
-    }
-
-    return box.map((row, rowIndex) => (
-      <View key={rowIndex} style={styles.boxRow}>
-        {row.map(box => box.JSX)}
-      </View>
-    ));
-  };
 
 
 
@@ -178,7 +186,7 @@ export default function({ route }: { navigation: object, route: any }) {
       }
     }
 
-    // find the min/max for group check
+    // find the group's min & max value for group check
     let rowMax: number = 0;
     let rowMin: number = 0;
     let colMax: number = 0;
@@ -292,7 +300,7 @@ export default function({ route }: { navigation: object, route: any }) {
 
   return(
     <View style={stylesGlobal.screen}>
-      {renderBox()}
+      {renderBox(box)}
     </View>
   );
 }
