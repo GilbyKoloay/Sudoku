@@ -1,42 +1,50 @@
-import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import { styles as globalStyles} from '../global';
+import { useState, useEffect } from 'react';
+import { View } from 'react-native';
+import { SudokuBox } from '../components';
+import {
+  initializeBoxValues,
+  setBoxValue,
+  setBoxUserValue,
+  setBoxJSX
+} from '../functions';
+import {
+  styles as globalStyles,
+  interfaces as globalInterfaces
+} from '../global';
 
-const styles = StyleSheet.create({});
 
-interface interfaces {
-  box: Array<
-    Array<{
-      value: number;
-      userValue: number;
-      note: Array<number>;
-      JSX: JSX.Element;
-    }>
-  >;
-}
 
-const SudokuBox = ({props}: {props: {box: interfaces['box']}}): JSX.Element => {
-  const {box} = props;
-
-  return <View></View>;
-};
-
-export default function ({route}: {route: any}): JSX.Element {
-  const {
-    sudokuSize,
-    sudokuBoxGroupSize,
-    difficulty,
-  }: {
-    sudokuSize: number;
-    sudokuBoxGroupSize: number;
-    difficulty: number;
+export default function({ navigation, route }: { navigation: object; route: any }) {
+  const { sudokuSize, sudokuBoxGroupSize, difficulty }: {
+    sudokuSize: number,
+    sudokuBoxGroupSize: globalInterfaces['sudokuBoxGroupSize'],
+    difficulty: number
   } = route.params;
+  const [box, setBox] = useState <globalInterfaces['box']> ([]);
 
-  const [box, setBox] = useState<interfaces['box']>([]);
+
+
+  function createBox(): void {console.log("now in 'createBox()'")
+    let thisBox: globalInterfaces['box'] = initializeBoxValues(sudokuSize);
+    thisBox = setBoxValue(thisBox, sudokuSize, sudokuBoxGroupSize);
+    thisBox = setBoxUserValue(thisBox, sudokuSize, difficulty);
+    thisBox = setBoxJSX(thisBox, sudokuSize, sudokuBoxGroupSize);
+
+    setBox(thisBox);
+    console.log("end of 'createBox()'");
+  }
+
+
+
+  useEffect(() => {
+    createBox();
+  }, []);
+
+
 
   return (
     <View style={globalStyles.screen}>
       <SudokuBox props={{box}} />
     </View>
   );
-}
+};

@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import { View, Button } from 'react-native';
+import { InputSudokuSize, SelectSudokuBoxGroupSize, SelectDifficulty } from '../components';
+import { checkIfNumberIsPrime, countTotalOfSudokuBoxGroupSize } from '../functions';
 import {
   styles as globalStyles,
   interfaces as globalInterfaces
 } from '../global';
-import { InputSudokuSize, SelectSudokuBoxGroupSize, SelectDifficulty } from '../components';
-import { checkIfNumberIsPrime, countTotalOfSudokuBoxGroupSize } from '../functions';
 
 
 
@@ -69,7 +69,7 @@ export default function({ navigation }: { navigation: any }) {
       {isSudokuSizePlayable && <SelectDifficulty props={{difficulty, selectedDifficulty, setSelectedDifficulty}}/>}
       {isSudokuSizePlayable && (
         <Button
-          title='Create Game'
+          title='Create Game / Game'
           onPress={() => navigation.navigate('Game', {
             sudokuSize: parseInt(sudokuSize),
             sudokuBoxGroupSize: sudokuBoxGroupSizeList[selectedBoxGroupSize],
@@ -78,6 +78,7 @@ export default function({ navigation }: { navigation: any }) {
           color='#00EC00'
         />
       )}
+      <View style={{height: 50}} />
     </View>
   );
-}
+};

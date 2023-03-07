@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, TextInput } from 'react-native';
 import { styles as globalStyles } from '../global';
 
@@ -11,8 +10,6 @@ export default function({ props }: { props: {
 }}) {
   const { sudokuSize, checkIfSudokuSizeIsPlayable, sudokuSizeNotPlayableErrorMessage } = props;
 
-
-  
   return (
     <View style={globalStyles.section}>
       <Text style={globalStyles.textMedium}>Input Sudoku Size: </Text>

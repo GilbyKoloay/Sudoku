@@ -10,8 +10,6 @@ export default function({ props }: { props: {
 }}) {
   const { difficulty, selectedDifficulty, setSelectedDifficulty } = props;
 
-  
-
   return (
     <View style={globalStyles.section}>
       <Text style={globalStyles.textMedium}>Select Difficulty: </Text>

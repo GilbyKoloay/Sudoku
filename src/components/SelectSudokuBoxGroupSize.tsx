@@ -1,5 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { styles as globalStyles, interfaces as globalInterfaces } from '../global';
+import {
+  styles as globalStyles,
+  interfaces as globalInterfaces
+} from '../global';
 
 
 
@@ -9,8 +12,6 @@ export default function({ props }: { props: {
   setSelectedBoxGroupSize: Function
 }}) {
   const { sudokuBoxGroupSizeList, selectedBoxGroupSize, setSelectedBoxGroupSize } = props;
-
-
 
   return (
     <View style={globalStyles.section}>
