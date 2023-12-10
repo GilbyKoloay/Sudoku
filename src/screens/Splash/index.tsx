@@ -1,11 +1,26 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
-import { SafeAreaView, Text } from 'react-native';
+import {
+  SafeAreaView,
+  Text,
+  View,
+  StyleSheet
+} from 'react-native';
 
 import { RootStackParamList } from '../../navigation';
-import { globalStyles } from '../../global';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>
+
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+  title: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 32
+  }
+});
 
 const Splash: React.FC<Props> = ({ navigation }): React.JSX.Element => {
   useEffect(() => {
@@ -13,8 +28,14 @@ const Splash: React.FC<Props> = ({ navigation }): React.JSX.Element => {
   }, []);
 
   return (
-    <SafeAreaView style={globalStyles.screen}>
-      <Text style={globalStyles.text}>Splash</Text>
+    <SafeAreaView style={{flex: 1, flexDirection: 'row'}}>
+      <View style={[styles.wrapper, {backgroundColor: '#1c1917'}]}>
+        <Text style={[styles.title, {color: '#f5f5f4', textAlign: 'right'}]}>Sud</Text>
+      </View>
+
+      <View style={[styles.wrapper, {backgroundColor: '#f5f5f4'}]}>
+        <Text style={[styles.title, {color: '#1c1917'}]}>oku</Text>
+      </View>
     </SafeAreaView>
   );
 };

@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { Splash, Home, Game } from '../screens';
+import { Game, Home, Splash } from '../screens';
 
 export type RootStackParamList = {
   Splash: undefined,

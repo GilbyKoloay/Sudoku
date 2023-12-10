@@ -9,6 +9,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   text: {
+    fontFamily: 'Poppins-Regular',
     color: '#171717'
   }
 });
