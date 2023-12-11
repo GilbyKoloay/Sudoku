@@ -2,9 +2,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import {
   SafeAreaView,
+  StyleSheet,
   Text,
-  View,
-  StyleSheet
+  View
 } from 'react-native';
 
 import { RootStackParamList } from '../../navigation';

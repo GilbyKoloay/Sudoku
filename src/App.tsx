@@ -1,8 +1,13 @@
+import { Provider } from 'react-redux';
+
 import Navigation from './navigation';
+import { store } from './redux';
 
 const App: React.FC = (): React.JSX.Element => {
   return (
-    <Navigation />
+    <Provider store={store}>
+      <Navigation />
+    </Provider>
   );
 };
 

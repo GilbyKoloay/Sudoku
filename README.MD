@@ -10,14 +10,16 @@
   <a href='https://reactnative.dev'>
     <img src='https://skillicons.dev/icons?i=react' />
   </a>
+  <a href='https://redux.js.org/'>
+    <img src='https://skillicons.dev/icons?i=redux' />
+  </a>
   <a href='https://supabase.com'>
     <img src='https://skillicons.dev/icons?i=supabase' />
   </a>
-</p
+</p>
 
 
 
-#
 ## Features
 - Three modes (easy, medium, hard).
 - Two themes (light, dark).
