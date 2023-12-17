@@ -1,7 +1,5 @@
 // constants
 
-import Colors from './colors';
+import colors from './colors';
 
-
-
-export { Colors }
+export { colors };
