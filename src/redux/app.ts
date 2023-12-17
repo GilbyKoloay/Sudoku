@@ -1,18 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const dark = '#171717';
-const light = '#f5f5f5';
+import { colors } from '../constants';
+import { GameMode } from '../types';
 
-type GameMode = 'Easy' | 'Medium' | 'Hard';
-type PrimaryColor = typeof dark | typeof light;
-type SecondaryColor = typeof light | typeof dark;
-
-export const appSlice = createSlice({
+const appSlice = createSlice({
   name: 'app',
   initialState: {
     gameMode: <GameMode>'Medium',
-    primaryColor: <PrimaryColor>dark,
-    secondaryColor: <SecondaryColor>light,
+    primaryColor: colors.darkest,
+    secondaryColor: colors.light,
   },
   reducers: {
     switchGameMode: state => {
@@ -21,16 +17,16 @@ export const appSlice = createSlice({
       else if (state.gameMode === 'Hard') state.gameMode = 'Easy';
     },
     switchTheme: state => {
-      if (state.primaryColor === dark) {
-        state.primaryColor = light;
-        state.secondaryColor = dark;
+      if (state.primaryColor === colors.darkest) {
+        state.primaryColor = colors.lightest;
+        state.secondaryColor = colors.dark;
       } else {
-        state.primaryColor = dark;
-        state.secondaryColor = light;
+        state.primaryColor = colors.darkest;
+        state.secondaryColor = colors.light;
       }
     },
   },
 });
 
+export const reducer = appSlice.reducer;
 export const { switchGameMode, switchTheme } = appSlice.actions;
-export default appSlice.reducer;

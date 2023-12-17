@@ -1,23 +1,18 @@
 import { StyleSheet } from 'react-native';
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  textSm: {
+const text = StyleSheet.create({
+  sm: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
   },
-  textMd: {
+  md: {
     fontFamily: 'Poppins-Regular',
     fontSize: 16,
   },
-  textLg: {
+  lg: {
     fontFamily: 'Poppins-Regular',
     fontSize: 20,
   },
 });
 
-export default styles;
+export default text;

@@ -20,12 +20,6 @@
 
 
 
-## Features
-- Three modes (easy, medium, hard).
-- Two themes (light, dark).
-
-
-
 ## Environment
 - Developed using Oppo A83 device.
 - Developed using Gradle version 8.5 to support Java version 21.

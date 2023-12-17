@@ -2,14 +2,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Game, Home, Splash } from '../screens';
+import { NavigationParamList } from '../types';
 
-export type RootStackParamList = {
-  Splash: undefined;
-  Home: undefined;
-  Game: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<NavigationParamList>();
 
 const Navigation: React.FC = (): React.ReactNode => {
   return (

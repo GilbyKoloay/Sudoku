@@ -1,20 +1,18 @@
-import { sudokuSize } from '.';
-import type { Sudoku, SudokuCell } from '.';
+import { Sudoku, Cell } from './Types';
+import { GameMode } from '../../types';
 
-type Difficulty = 'Easy' | 'Medium' | 'Hard';
-
-function setCell(sudoku: Sudoku): Sudoku {
+function setCell(sudoku: Sudoku, size: number): Sudoku {
   let newSudoku: Sudoku = sudoku;
-  const object: SudokuCell = {
+  const object: Cell = {
     actualValue: 0,
     userValue: null,
     isLocked: true,
     notes: [],
   };
 
-  for (let row = 0; row < sudokuSize; row++) {
+  for (let row = 0; row < size; row++) {
     newSudoku[row] = [{}];
-    for (let col = 0; col < sudokuSize; col++) {
+    for (let col = 0; col < size; col++) {
       newSudoku[row][col] = object;
     }
   }
@@ -22,19 +20,19 @@ function setCell(sudoku: Sudoku): Sudoku {
   return newSudoku;
 }
 
-function setCellsValue(sudoku: Sudoku): Sudoku {
+function setCellsValue(sudoku: Sudoku, size: number): Sudoku {
   let newSudoku: Sudoku = sudoku;
   let actualValues: number[][] = [];
 
-  for (let row = 0; row < sudokuSize; row++) {
+  for (let row = 0; row < size; row++) {
     actualValues[row] = [];
-    for (let col = 0; col < sudokuSize; col++) {
+    for (let col = 0; col < size; col++) {
       actualValues[row][col] = 0;
     }
   }
 
   function isValid(num: number, row: number, col: number): boolean {
-    for (let ind = 0; ind < sudokuSize; ind++) {
+    for (let ind = 0; ind < size; ind++) {
       if (
         actualValues[row][ind] === num ||
         actualValues[ind][col] === num ||
@@ -48,13 +46,10 @@ function setCellsValue(sudoku: Sudoku): Sudoku {
   }
 
   function checkActualValues(): boolean {
-    for (let row = 0; row < sudokuSize; row++) {
-      for (let col = 0; col < sudokuSize; col++) {
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
         if (actualValues[row][col] === 0) {
-          const numbers = Array.from(
-            { length: sudokuSize },
-            (_, index) => index + 1,
-          );
+          const numbers = Array.from({ length: size }, (_, index) => index + 1);
           numbers.sort(() => Math.random() - 0.5);
 
           for (const num of numbers) {
@@ -73,8 +68,8 @@ function setCellsValue(sudoku: Sudoku): Sudoku {
 
   checkActualValues();
 
-  for (let row = 0; row < sudokuSize; row++) {
-    for (let col = 0; col < sudokuSize; col++) {
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
       newSudoku[row][col] = {
         ...newSudoku[row][col],
         actualValue: actualValues[row][col],
@@ -85,23 +80,27 @@ function setCellsValue(sudoku: Sudoku): Sudoku {
   return newSudoku;
 }
 
-function setLockedCells(sudoku: Sudoku, difficulty: Difficulty): Sudoku {
+function setLockedCells(
+  sudoku: Sudoku,
+  gameMode: GameMode,
+  size: number,
+): Sudoku {
   let newSudoku: Sudoku = sudoku;
-  const sudokuLength: number = sudokuSize * sudokuSize;
+  const sudokuLength: number = size * size;
   const easyPercentage = (sudokuLength * 40) / 100;
   // const mediumPercentage = sudokuLength*60/100;
   const mediumPercentage = (sudokuLength * 1) / 100;
   const hardPercentage = (sudokuLength * 80) / 100;
   let lockedCount: number =
-    difficulty === 'Easy'
+    gameMode === 'Easy'
       ? easyPercentage
-      : difficulty === 'Medium'
+      : gameMode === 'Medium'
       ? mediumPercentage
       : hardPercentage;
 
   while (lockedCount > 0) {
-    const randomRow = Math.floor(Math.random() * sudokuSize);
-    const randomCol = Math.floor(Math.random() * sudokuSize);
+    const randomRow = Math.floor(Math.random() * size);
+    const randomCol = Math.floor(Math.random() * size);
 
     if (newSudoku[randomRow][randomCol].isLocked) {
       newSudoku[randomRow][randomCol].isLocked = false;
@@ -112,11 +111,16 @@ function setLockedCells(sudoku: Sudoku, difficulty: Difficulty): Sudoku {
   return newSudoku;
 }
 
-export default function createSudoku(difficulty: Difficulty): Sudoku {
+/**
+ *
+ * @param gameMode refer to GameMode type.
+ * @returns 2 dimensional array which element is an object. The object is using the Cell type.
+ */
+export default function createSudoku(gameMode: GameMode, size: number): Sudoku {
   let newSudoku: Sudoku = [[{}]];
-  newSudoku = setCell(newSudoku);
-  newSudoku = setCellsValue(newSudoku);
-  newSudoku = setLockedCells(newSudoku, difficulty);
+  newSudoku = setCell(newSudoku, size);
+  newSudoku = setCellsValue(newSudoku, size);
+  newSudoku = setLockedCells(newSudoku, gameMode, size);
 
   return newSudoku;
 }

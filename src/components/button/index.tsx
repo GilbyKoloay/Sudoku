@@ -1,11 +1,12 @@
-import { Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import { RootState } from '../../redux';
-import { globalStyles } from '../../global';
+import { colors } from '../../constants';
+import { text } from '../../styles';
+import { ReduxState } from '../../types';
 
-type Props = TouchableOpacityProps & {
-  children: React.ReactNode;
+type Props = {
+  children: string | React.ReactNode;
   onPress: () => void;
   type?: 'solid' | 'outline' | 'none';
   size?: 'sm' | 'md' | 'lg';
@@ -15,44 +16,47 @@ type Props = TouchableOpacityProps & {
 const Button: React.FC<Props> = ({
   children,
   onPress,
-  type = 'none',
   size = 'sm',
+  type = 'none',
   disabled = false,
-}): React.JSX.Element => {
+}): React.ReactNode => {
   const { primaryColor, secondaryColor } = useSelector(
-    (state: RootState) => state.app,
+    (state: ReduxState) => state.app,
   );
 
   return (
     <TouchableOpacity
       style={{
         height: size === 'lg' ? 56 : size === 'md' ? 40 : 28,
-        width: '100%',
+        backgroundColor: type === 'solid' ? secondaryColor : 'transparent',
+        borderWidth: type === 'none' ? 0 : 1,
+        borderRadius: 4,
+        borderColor: secondaryColor,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: type === 'solid' ? secondaryColor : primaryColor,
-        borderWidth: type !== 'none' ? 1 : 0,
-        borderColor: secondaryColor,
-        borderRadius: 4,
       }}
       onPress={onPress}
-      activeOpacity={0.4}
+      activeOpacity={type === 'solid' ? 0.8 : 0.4}
       disabled={disabled}
     >
-      <Text
-        style={[
-          size === 'lg'
-            ? globalStyles.textLg
-            : size === 'md'
-            ? globalStyles.textMd
-            : globalStyles.textSm,
-          {
-            color: type === 'solid' ? primaryColor : secondaryColor,
-          },
-        ]}
-      >
-        {children}
-      </Text>
+      {typeof children === 'string' ? (
+        <Text
+          style={[
+            text[size],
+            {
+              color: disabled
+                ? colors.neutral
+                : type === 'solid'
+                ? primaryColor
+                : secondaryColor,
+            },
+          ]}
+        >
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
     </TouchableOpacity>
   );
 };
