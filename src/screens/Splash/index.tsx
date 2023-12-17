@@ -2,9 +2,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-import { RootStackParamList } from '../../navigation';
+import { colors } from '../../constants';
+import type { NavigationParamList } from '../../types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
+type Props = NativeStackScreenProps<NavigationParamList, 'Splash'>;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -17,21 +18,23 @@ const styles = StyleSheet.create({
   },
 });
 
-const Splash: React.FC<Props> = ({ navigation }): React.JSX.Element => {
+const Splash: React.FC<Props> = ({ navigation }): React.ReactNode => {
   useEffect(() => {
     setTimeout(() => navigation.replace('Home'), 500);
   }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, flexDirection: 'row' }}>
-      <View style={[styles.wrapper, { backgroundColor: '#1c1917' }]}>
-        <Text style={[styles.title, { color: '#f5f5f4', textAlign: 'right' }]}>
+      <View style={[styles.wrapper, { backgroundColor: colors.darkest }]}>
+        <Text
+          style={[styles.title, { color: colors.light, textAlign: 'right' }]}
+        >
           Sud
         </Text>
       </View>
 
-      <View style={[styles.wrapper, { backgroundColor: '#f5f5f4' }]}>
-        <Text style={[styles.title, { color: '#1c1917' }]}>oku</Text>
+      <View style={[styles.wrapper, { backgroundColor: colors.lightest }]}>
+        <Text style={[styles.title, { color: colors.dark }]}>oku</Text>
       </View>
     </SafeAreaView>
   );
