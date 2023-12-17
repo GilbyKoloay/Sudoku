@@ -4,41 +4,37 @@ import { Pressable, SafeAreaView, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '../../components';
-import { globalStyles } from '../../global';
-import { RootStackParamList } from '../../navigation';
-import { RootState, app } from '../../redux';
+import { app } from '../../redux';
+import { screen, text } from '../../styles';
+import type { ReduxState } from '../../types';
+import { NavigationParamList } from '../../types';
+import type { Sudoku } from './Types';
 import createSudoku from './createSudoku';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
+type Props = NativeStackScreenProps<NavigationParamList, 'Game'>;
 
-export type Sudoku = [[SudokuCell]];
+const size = 9;
 
-export type SudokuCell = {
-  actualValue?: number;
-  userValue?: number | null;
-  isLocked?: boolean;
-  notes?: number[];
-};
-
-export const sudokuSize = 9;
-
-const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
+const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
   const dispatch = useDispatch();
   const { primaryColor, secondaryColor, gameMode } = useSelector(
-    (state: RootState) => state.app,
+    (state: ReduxState) => state.app,
   );
   const [sudoku, setSudoku] = useState<Sudoku>([[{}]]);
-  const [selectedSudoku, setSelectedSudoku] = useState<number[]>([-1, -1]);
-  const [isGameCompleted, setIsGameCompleted] = useState<boolean>(false);
+  const [selected, setSelected] = useState<{ row: number; col: number }>({
+    row: -1,
+    col: -1,
+  });
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
   useEffect(() => {
-    setSudoku(createSudoku(gameMode));
+    setSudoku(createSudoku(gameMode, 9));
   }, []);
 
   useEffect(() => {
-    if (sudoku.length > 1 && isSudokuCompleted()) {
-      setSelectedSudoku([-1, -1]);
-      setIsGameCompleted(true);
+    if (sudoku.length > 1 && isCompleteChecker()) {
+      setSelected({ row: -1, col: -1 });
+      setIsCompleted(true);
     }
   }, [sudoku]);
 
@@ -47,30 +43,30 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
   }
 
   function handleCellOnPress(row: number, col: number): void {
-    setSelectedSudoku([row, col]);
+    setSelected({ row, col });
   }
 
   function handleNumberOnPress(number: number): void {
     if (
-      selectedSudoku[0] >= 0 &&
-      selectedSudoku[1] >= 0 &&
-      !sudoku[selectedSudoku[0]][selectedSudoku[1]].isLocked
+      selected.row >= 0 &&
+      selected.col >= 0 &&
+      !sudoku[selected.row][selected.col].isLocked
     ) {
       let newSudoku: Sudoku = [...sudoku];
 
-      if (newSudoku[selectedSudoku[0]][selectedSudoku[1]].userValue === number)
-        newSudoku[selectedSudoku[0]][selectedSudoku[1]].userValue = null;
-      else newSudoku[selectedSudoku[0]][selectedSudoku[1]].userValue = number;
+      if (newSudoku[selected.row][selected.col].userValue === number)
+        newSudoku[selected.row][selected.col].userValue = null;
+      else newSudoku[selected.row][selected.col].userValue = number;
 
       setSudoku(newSudoku);
     }
   }
 
-  function isSudokuCompleted(): boolean {
+  function isCompleteChecker(): boolean {
     let isCompleted = true;
 
-    for (let row = 0; row < sudokuSize; row++) {
-      for (let col = 0; col < sudokuSize; col++) {
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
         if (
           !sudoku[row][col].isLocked &&
           sudoku[row][col].actualValue !== sudoku[row][col].userValue
@@ -85,7 +81,7 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
   return (
     <SafeAreaView
       style={[
-        globalStyles.screen,
+        screen.screen,
         { backgroundColor: primaryColor, justifyContent: 'space-between' },
       ]}
     >
@@ -96,24 +92,19 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
       </View>
 
       {sudoku.length === 1 ? (
-        <Text
-          style={[
-            globalStyles.textLg,
-            { color: secondaryColor, textAlign: 'center' },
-          ]}
-        >
+        <Text style={[text.lg, { color: secondaryColor, textAlign: 'center' }]}>
           Loading ...
         </Text>
       ) : (
         <View style={{ borderWidth: 1, borderColor: secondaryColor }}>
-          {[...new Array(sudokuSize)].map((_, rowIndex) => (
+          {[...new Array(size)].map((_, rowIndex) => (
             <View
               key={rowIndex}
               style={{
                 flexDirection: 'row',
               }}
             >
-              {[...new Array(sudokuSize)].map((__, colIndex) => (
+              {[...new Array(size)].map((__, colIndex) => (
                 <Pressable
                   key={colIndex}
                   style={{
@@ -130,7 +121,7 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
                     aspectRatio: 1,
                   }}
                   onPress={() => handleCellOnPress(rowIndex, colIndex)}
-                  disabled={isGameCompleted}
+                  disabled={isCompleted}
                 >
                   <View
                     style={{
@@ -138,27 +129,26 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       backgroundColor:
-                        rowIndex === selectedSudoku[0] &&
-                        colIndex === selectedSudoku[1]
+                        rowIndex === selected.row && colIndex === selected.col
                           ? secondaryColor
                           : 'transparent',
                     }}
                   >
                     {sudoku[rowIndex][colIndex].isLocked ? (
-                      <Text style={[globalStyles.textLg, { color: '#737373' }]}>
+                      <Text style={[text.lg, { color: '#737373' }]}>
                         {sudoku[rowIndex][colIndex].actualValue}
                       </Text>
                     ) : (
                       <Text
                         style={[
-                          globalStyles.textLg,
+                          text.lg,
                           {
                             color:
                               sudoku[rowIndex][colIndex].actualValue !==
                               sudoku[rowIndex][colIndex].userValue
                                 ? '#ef4444'
-                                : rowIndex === selectedSudoku[0] &&
-                                  colIndex === selectedSudoku[1]
+                                : rowIndex === selected.row &&
+                                  colIndex === selected.col
                                 ? primaryColor
                                 : secondaryColor,
                           },
@@ -182,12 +172,12 @@ const Game: React.FC<Props> = ({ navigation }): React.JSX.Element => {
           width: '100%',
         }}
       >
-        {[...new Array(sudokuSize)].map((_, index) => (
+        {[...new Array(size)].map((_, index) => (
           <View key={index} style={{ flex: 1 }}>
             <Button
               onPress={() => handleNumberOnPress(index + 1)}
               size='lg'
-              disabled={isGameCompleted}
+              disabled={isCompleted}
             >
               {index + 1}
             </Button>
