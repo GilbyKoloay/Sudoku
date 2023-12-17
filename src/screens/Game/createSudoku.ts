@@ -88,8 +88,7 @@ function setLockedCells(
   let newSudoku: Sudoku = sudoku;
   const sudokuLength: number = size * size;
   const easyPercentage = (sudokuLength * 40) / 100;
-  // const mediumPercentage = sudokuLength*60/100;
-  const mediumPercentage = (sudokuLength * 1) / 100;
+  const mediumPercentage = (sudokuLength * 60) / 100;
   const hardPercentage = (sudokuLength * 80) / 100;
   let lockedCount: number =
     gameMode === 'Easy'
