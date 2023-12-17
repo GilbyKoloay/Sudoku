@@ -3,16 +3,17 @@ import { SafeAreaView, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '../../components';
-import { globalStyles } from '../../global';
-import { RootStackParamList } from '../../navigation';
-import { RootState, app } from '../../redux';
+import { app } from '../../redux';
+import { screen } from '../../styles';
+import type { ReduxState } from '../../types';
+import { NavigationParamList } from '../../types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type Props = NativeStackScreenProps<NavigationParamList, 'Home'>;
 
-const Home: React.FC<Props> = ({ navigation }): React.JSX.Element => {
+const Home: React.FC<Props> = ({ navigation }): React.ReactNode => {
   const dispatch = useDispatch();
   const { gameMode, primaryColor } = useSelector(
-    (state: RootState) => state.app,
+    (state: ReduxState) => state.app,
   );
 
   function handleModeOnPress() {
@@ -30,7 +31,7 @@ const Home: React.FC<Props> = ({ navigation }): React.JSX.Element => {
   return (
     <SafeAreaView
       style={[
-        globalStyles.screen,
+        screen.screen,
         {
           backgroundColor: primaryColor,
           justifyContent: 'center',
@@ -43,7 +44,7 @@ const Home: React.FC<Props> = ({ navigation }): React.JSX.Element => {
           New Game
         </Button>
         <Button onPress={handleModeOnPress} type='outline' size='lg'>
-          Mode: {gameMode}
+          {`Mode: ${gameMode}`}
         </Button>
         <Button onPress={handleSwitchThemeOnPress} type='outline' size='lg'>
           Switch Theme
