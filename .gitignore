@@ -65,7 +65,10 @@ yarn-error.log
 # testing
 /coverage
 
-# TASKS
+# env
+.env
+
+# tasks
 FEATURES.MD
 FIX.MD
 HOTFIX.MD
