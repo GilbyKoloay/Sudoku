@@ -15,11 +15,11 @@ const Home: React.FC<Props> = ({ navigation }): React.ReactNode => {
   const { gameMode, primaryColor } = useSelector(
     (state: ReduxState) => state.app,
   );
-  
+
   function handleNewGameOnPress() {
     navigation.push('Game');
   }
-  
+
   function handleModeOnPress() {
     dispatch(app.switchGameMode());
   }
