@@ -39,10 +39,7 @@ const Button: React.FC<Props> = ({
       activeOpacity={type === 'solid' ? 0.8 : 0.4}
       disabled={disabled}
     >
-      {(
-        typeof children === 'string' ||
-        typeof children === 'number'
-      ) ? (
+      {typeof children === 'string' || typeof children === 'number' ? (
         <Text
           style={[
             text[size],
