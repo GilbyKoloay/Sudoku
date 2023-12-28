@@ -4,12 +4,14 @@ import { Pressable, SafeAreaView, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '../../components';
+import { colors } from '../../constants';
 import { app } from '../../redux';
 import { screen, text } from '../../styles';
 import type { ReduxState } from '../../types';
 import { NavigationParamList } from '../../types';
-import CongratulationModal from './CongratulationModal';
+import LostModal from './LostModal';
 import type { Sudoku } from './Types';
+import WonModal from './WonModal';
 import createSudoku from './createSudoku';
 
 type Props = NativeStackScreenProps<NavigationParamList, 'Game'>;
@@ -17,7 +19,7 @@ type Props = NativeStackScreenProps<NavigationParamList, 'Game'>;
 const size = 9;
 
 function isCompleteChecker(sudoku: Sudoku): boolean {
-  let isCompleted = true;
+  let isOver = true;
 
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
@@ -25,11 +27,11 @@ function isCompleteChecker(sudoku: Sudoku): boolean {
         !sudoku[row][col].isLocked &&
         sudoku[row][col].actualValue !== sudoku[row][col].userValue
       )
-        isCompleted = false;
+        isOver = false;
     }
   }
 
-  return isCompleted;
+  return isOver;
 }
 
 const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
@@ -42,32 +44,61 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
     row: -1,
     col: -1,
   });
-  const [score, setScore] = useState<number>(0);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [time, setTime] = useState<number>(0);
+  const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
+  const [lives, setLives] = useState<number>(3);
+  const [gameState, setGameState] = useState<'inProgress' | 'lost' | 'won'>('inProgress');
+  const [isLostModalVisible, setIsWonModalVisible] = useState<boolean>(false);
+  const [isWonModalVisible, setIsLostModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     setSudoku(createSudoku(gameMode, 9));
   }, []);
-
+  
+  /**
+   * time starter
+   */
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-
     if (sudoku.length > 1) {
-      timer = setInterval(() => setScore(prev => prev + 1), 1000);
-
-      if (isCompleteChecker(sudoku)) {
-        if (timer) clearInterval(timer);
-        setSelected({ row: -1, col: -1 });
-        setIsCompleted(true);
-        setIsModalVisible(true);
+      if (!timeInterval) {
+        const interval = setInterval(() => {
+          setTime(prev => prev+1);
+        }, 1000);
+        
+        setTimeInterval(interval);
       }
     }
 
     return () => {
-      if (timer) clearInterval(timer);
-    };
+      if (timeInterval) clearInterval(timeInterval);
+    }
   }, [sudoku]);
+
+  /**
+   * check if game is completed or not
+   */
+  useEffect(() => {
+    if (sudoku.length > 1 && isCompleteChecker(sudoku)) {
+      if (timeInterval) clearInterval(timeInterval);
+      setSelected({ row: -1, col: -1 });
+      setGameState('won');
+    }
+  }, [sudoku]);
+
+  /**
+   * check if lives are out or not
+   */
+  useEffect(() => {
+    if (lives === 0) {
+      if (timeInterval) clearInterval(timeInterval);
+      setSelected({ row: -1, col: -1 });
+      setGameState('lost');
+    }
+  }, [lives]);
+
+  function handleMenuOnPress(): void {
+    navigation.goBack();
+  }
 
   function handleSwitchThemeOnPress(): void {
     dispatch(app.switchTheme());
@@ -85,15 +116,24 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
     ) {
       let newSudoku: Sudoku = [...sudoku];
 
+      /**
+       * if the cell has value of 5 and the user press number 5, the cell will be emptied
+       * if the cell is empty and the user press number 5, the cell will be 5
+       */
       if (newSudoku[selected.row][selected.col].userValue === number)
         newSudoku[selected.row][selected.col].userValue = null;
       else newSudoku[selected.row][selected.col].userValue = number;
+
+      /**
+       * incorrect value checker
+       */
+      if ((sudoku[selected.row][selected.col].userValue) && (sudoku[selected.row][selected.col].actualValue !== number)) setLives(prev => prev-1);
 
       setSudoku(newSudoku);
     }
   }
 
-  function congratulationModalHandleGoToLeaderboardOnPress() {
+  function wonModalHandleGoToLeaderboardOnPress() {
     navigation.replace('Leaderboard');
   }
 
@@ -104,7 +144,10 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
         { backgroundColor: primaryColor, justifyContent: 'space-between' },
       ]}
     >
-      <View style={{ width: '50%', alignSelf: 'flex-end' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Button onPress={handleMenuOnPress} size='md'>
+          Go back to Menu
+        </Button>
         <Button onPress={handleSwitchThemeOnPress} size='md'>
           Switch Theme
         </Button>
@@ -116,9 +159,16 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
         </Text>
       ) : (
         <View>
-          <Text style={[text.md, { color: secondaryColor }]}>
-            Score: {score}
-          </Text>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end'}}>
+            <Text style={[text.md, { color: secondaryColor }]}>
+              Time: {time}
+            </Text>
+            {(gameState === 'won') && <Text style={[text.lg, {color: colors.green}]}>Game Won</Text>}
+            {(gameState === 'lost') && <Text style={[text.lg, {color: colors.red}]}>Game Lost</Text>}
+            <Text style={[text.md, { color: secondaryColor }]}>
+              {lives > 1 ? 'Lives' : 'Live'}: {lives}
+            </Text>
+          </View>
 
           <View style={{ borderWidth: 1, borderColor: secondaryColor }}>
             {[...new Array(size)].map((_, rowIndex) => (
@@ -149,7 +199,7 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
                       aspectRatio: 1,
                     }}
                     onPress={() => handleCellOnPress(rowIndex, colIndex)}
-                    disabled={isCompleted}
+                    disabled={(gameState !== 'inProgress')}
                   >
                     <View
                       style={{
@@ -163,10 +213,10 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
                       }}
                     >
                       {sudoku[rowIndex][colIndex].isLocked ? (
-                        <Text style={[text.lg, { color: '#737373' }]}>
+                        <Text style={[text.lg, { color: colors.neutral }]}>
                           {sudoku[rowIndex][colIndex].actualValue}
                         </Text>
-                      ) : (
+                      ) : ((gameState === 'inProgress') || (sudoku[rowIndex][colIndex].userValue === sudoku[rowIndex][colIndex].actualValue)) ? (
                         <Text
                           style={[
                             text.lg,
@@ -174,7 +224,7 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
                               color:
                                 sudoku[rowIndex][colIndex].actualValue !==
                                 sudoku[rowIndex][colIndex].userValue
-                                  ? '#ef4444'
+                                  ? colors.red
                                   : rowIndex === selected.row &&
                                     colIndex === selected.col
                                   ? primaryColor
@@ -183,6 +233,10 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
                           ]}
                         >
                           {sudoku[rowIndex][colIndex].userValue}
+                        </Text>
+                      ) : (
+                        <Text style={[text.lg, {color: colors.green}]}>
+                          {sudoku[rowIndex][colIndex].actualValue}
                         </Text>
                       )}
                     </View>
@@ -206,7 +260,7 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
             <Button
               onPress={() => handleNumberOnPress(index + 1)}
               size='lg'
-              disabled={isCompleted}
+              disabled={(gameState !== 'inProgress')}
             >
               {index + 1}
             </Button>
@@ -214,12 +268,14 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
         ))}
       </View>
 
-      <CongratulationModal
-        visible={isModalVisible}
-        setVisible={setIsModalVisible}
-        score={score}
+      <LostModal visible={isLostModalVisible} setVisible={setIsLostModalVisible} />
+
+      <WonModal
+        visible={isWonModalVisible}
+        setVisible={setIsWonModalVisible}
+        time={time}
         handleGoToLeaderboardOnPress={
-          congratulationModalHandleGoToLeaderboardOnPress
+          wonModalHandleGoToLeaderboardOnPress
         }
       />
     </SafeAreaView>
