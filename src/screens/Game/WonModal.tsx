@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { Modal, Text, View } from 'react-native';
-import { useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
+import { useSelector } from 'react-redux';
 
 import { Button } from '../../components';
 import { colors } from '../../constants';
+import { supabaseClient } from '../../helpers';
 import { text } from '../../styles';
 import { ReduxState } from '../../types';
 import TextInput from './TextInput';
-import { supabaseClient } from '../../helpers';
 
 type Props = {
   visible: boolean;
   setVisible: (value: boolean) => void;
-  score: number;
+  time: number;
   handleGoToLeaderboardOnPress: () => void;
 };
 
-const CongratulationModal: React.FC<Props> = ({
+const WonModal: React.FC<Props> = ({
   visible,
   setVisible,
-  score,
+  time,
   handleGoToLeaderboardOnPress,
 }): React.ReactNode => {
   const { primaryColor, secondaryColor, gameMode } = useSelector(
@@ -40,7 +40,7 @@ const CongratulationModal: React.FC<Props> = ({
       {
         createdAt: new Date(),
         username: username ? username : null,
-        score,
+        time,
         note: 'lorem ipsum dolor sit amet',
       },
     ]);
@@ -140,4 +140,4 @@ const CongratulationModal: React.FC<Props> = ({
   );
 };
 
-export default CongratulationModal;
+export default WonModal;

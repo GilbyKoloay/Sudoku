@@ -22,6 +22,6 @@
 
 ## Environment
 - Developed using Oppo A83 device.
-- Developed using Gradle version 8.3 to support Java version 19.
+- Developed using Gradle version 8.5 to support Java version 21.
     - [See Gradle compatibility](https://docs.gradle.org/current/userguide/compatibility.html).
     - To change Gradle version, change `distributionUrl` in `android\gradle\wrapper\gradle-wrapper.properties`
