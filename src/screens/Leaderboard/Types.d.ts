@@ -2,8 +2,8 @@ type Leaderboard = {
   id: string;
   createdAt: Date;
   username: string | null;
-  score: number;
-  note: string;
+  time: number;
+  note: string | null;
 };
 
 export { Leaderboard };

@@ -1,12 +1,14 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, Text } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { Button } from '../../components';
 import { supabaseClient } from '../../helpers';
-import { screen } from '../../styles';
+import { screen, text } from '../../styles';
 import type { GameMode, ReduxState } from '../../types';
 import { NavigationParamList } from '../../types';
+import List from './List';
 import type { Leaderboard as LeaderboardType } from './Types';
 
 type Props = NativeStackScreenProps<NavigationParamList, 'Leaderboard'>;
@@ -16,21 +18,22 @@ async function getLeaderboard(
 ): Promise<LeaderboardType[]> {
   const { data } = await supabaseClient
     .from(`${leaderboardName}Leaderboard`)
-    .select();
+    .select()
+    .order('time');
 
   return data || [];
 }
 
 const Leaderboard: React.FC<Props> = ({ navigation }): React.ReactNode => {
-  const { gameMode, primaryColor } = useSelector(
+  const { primaryColor, secondaryColor } = useSelector(
     (state: ReduxState) => state.app,
   );
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [easyLeaderboard, setEasyLeaderboard] = useState<LeaderboardType[]>([]);
-  const [mediumLeaderboard, setMediumLeaderboard] = useState<LeaderboardType[]>(
-    [],
+  const [easyLeaderboard, setEasyLeaderboard] = useState<LeaderboardType[] | null>(null);
+  const [mediumLeaderboard, setMediumLeaderboard] = useState<LeaderboardType[] | null>(
+    null,
   );
-  const [hardLeaderboard, setHardLeaderboard] = useState<LeaderboardType[]>([]);
+  const [hardLeaderboard, setHardLeaderboard] = useState<LeaderboardType[] | null>(null);
+  const [selectedLeaderboard, setSelectedLeaderboard] = useState<GameMode>('Easy');
 
   useEffect(() => {
     getLeaderboards();
@@ -46,10 +49,37 @@ const Leaderboard: React.FC<Props> = ({ navigation }): React.ReactNode => {
     setHardLeaderboard(newHardLeaderboard);
   }
 
+  function handleEasyOnPress() {
+    setSelectedLeaderboard('Easy');
+  }
+
+  function handleMediumOnPress() {
+    setSelectedLeaderboard('Medium');
+  }
+
+  function handleHardOnPress() {
+    setSelectedLeaderboard('Hard');
+  }
+
   return (
     <SafeAreaView style={[screen.screen, { backgroundColor: primaryColor }]}>
-      <Text>Leaderboard</Text>
-      {<Text>{isLoading ? 'loading' : 'loaded'}</Text>}
+      <Text style={[text.lg, {color: secondaryColor, textAlign: 'center'}]}>Leaderboard</Text>
+
+      <View style={{marginTop: 16, flexDirection: 'row', gap: 16}}>
+        <View style={{flex: 1}}>
+          <Button onPress={handleEasyOnPress} size='md' type={(selectedLeaderboard === 'Easy') ? 'solid' : 'none'} disabled={selectedLeaderboard === 'Easy'}>Easy</Button>
+        </View>
+        <View style={{flex: 1}}>
+          <Button onPress={handleMediumOnPress} size='md' type={(selectedLeaderboard === 'Medium') ? 'solid' : 'none'} disabled={selectedLeaderboard === 'Medium'}>Medium</Button>
+        </View>
+        <View style={{flex: 1}}>
+          <Button onPress={handleHardOnPress} size='md' type={(selectedLeaderboard === 'Hard') ? 'solid' : 'none'} disabled={selectedLeaderboard === 'Hard'}>Hard</Button>
+        </View>
+      </View>
+
+      {(selectedLeaderboard === 'Easy') && <List list={easyLeaderboard} />}
+      {(selectedLeaderboard === 'Medium') && <List list={mediumLeaderboard} />}
+      {(selectedLeaderboard === 'Hard') && <List list={hardLeaderboard} />}
     </SafeAreaView>
   );
 };
