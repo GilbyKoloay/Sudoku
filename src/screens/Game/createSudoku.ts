@@ -1,5 +1,5 @@
-import { Sudoku, Cell } from './Types';
 import { GameMode } from '../../types';
+import { Cell, Sudoku } from './Types';
 
 function setCell(sudoku: Sudoku, size: number): Sudoku {
   let newSudoku: Sudoku = sudoku;
