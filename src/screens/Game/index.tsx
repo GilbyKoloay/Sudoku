@@ -48,8 +48,8 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
   const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
   const [lives, setLives] = useState<number>(3);
   const [gameState, setGameState] = useState<'inProgress' | 'lost' | 'won'>('inProgress');
-  const [isLostModalVisible, setIsWonModalVisible] = useState<boolean>(false);
-  const [isWonModalVisible, setIsLostModalVisible] = useState<boolean>(false);
+  const [isLostModalVisible, setIsLostModalVisible] = useState<boolean>(false);
+  const [isWonModalVisible, setIsWonModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     setSudoku(createSudoku(gameMode, 9));
@@ -82,6 +82,7 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
       if (timeInterval) clearInterval(timeInterval);
       setSelected({ row: -1, col: -1 });
       setGameState('won');
+      setIsWonModalVisible(true);
     }
   }, [sudoku]);
 
@@ -93,6 +94,7 @@ const Game: React.FC<Props> = ({ navigation }): React.ReactNode => {
       if (timeInterval) clearInterval(timeInterval);
       setSelected({ row: -1, col: -1 });
       setGameState('lost');
+      setIsLostModalVisible(true);
     }
   }, [lives]);
 

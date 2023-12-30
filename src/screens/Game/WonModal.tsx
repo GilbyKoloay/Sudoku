@@ -41,7 +41,7 @@ const WonModal: React.FC<Props> = ({
         createdAt: new Date(),
         username: username ? username : null,
         time,
-        note: 'lorem ipsum dolor sit amet',
+        note: note ? note : null,
       },
     ]);
 
@@ -97,7 +97,7 @@ const WonModal: React.FC<Props> = ({
                 value={username}
                 onChange={setUsername}
                 placeholder='username'
-                readOnly={isSubmitting}
+                readOnly={isSubmitting || isSubmitted}
               />
             </View>
             <View>
@@ -105,7 +105,7 @@ const WonModal: React.FC<Props> = ({
                 value={note}
                 onChange={setNote}
                 placeholder='note'
-                readOnly={isSubmitting}
+                readOnly={isSubmitting || isSubmitted}
               />
             </View>
           </View>
@@ -116,7 +116,7 @@ const WonModal: React.FC<Props> = ({
                 onPress={handleSubmitOnPress}
                 type='solid'
                 size='md'
-                disabled={isSubmitting}
+                disabled={!username || isSubmitting}
               >
                 Submit
               </Button>
